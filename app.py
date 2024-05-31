@@ -1,21 +1,19 @@
 import re
-import os
 import subprocess
 import tkinter as tk
 from tkinter import messagebox
-# reconsidering using threading but currently do not see a usecase for that
 
 class IPApp:
     def __init__(self, root):
         # root window
         self.root = root
-        self.root.title("Ip Address Tool")
-        #self.root.geometry("")
-        #self.root.resizable(height=False, width=False)
+        self.root.title("Ip Ping Tool")
+        self.root.geometry("250x220")
+        self.root.resizable(height=False, width=False)
 
         # Left Frame
         self.left_frame = tk.Frame(root)
-        self.left_frame.pack(side="left", padx=(10,5), pady=10)
+        self.left_frame.pack(side="left", padx=10, pady=10)
 
         # Left Frame - ip input entry
         self.ip_entry = tk.Entry(self.left_frame, width=15, justify='left')
@@ -53,11 +51,11 @@ class IPApp:
         self.stop_button.grid(column=2, row=0, sticky='NWES')
 
         self.processes = []
-        # self.root.bind("<Return>", self.start_ping)
+        self.root.bind("<Return>", self.start_ping)
 
         # Right Frame
         self.right_frame = tk.Frame(root)
-        self.right_frame.pack(side="right", padx=(5,10), pady=10)
+        self.right_frame.pack(side="right", padx=10, pady=10)
 
         # Right Frame - list box containing saved ip addresses
         self.ip_listbox = tk.Listbox(self.right_frame, selectmode='single', width=15)
@@ -121,7 +119,6 @@ class IPApp:
                             self.ip_listbox.insert(tk.END, ip)
         except FileNotFoundError:
             pass
-            # messagebox.showwarning("Error Loading Ip", "File path not found")
 
     def display_selected_ip(self, ip):
         # Displays the IP address selected in the listbox in the IP entry field for pinging
@@ -132,18 +129,19 @@ class IPApp:
             self.ip_entry.insert(0, ip)
 
     def start_ping(self):
+        # This function is responsible for initiating the ping process based on the selected option
         if self.ping_option.get() == 'Single':
             self.ping_single_ip()
         else:
             self.ping_all_ips()
     
     def ping_single_ip(self):
-        # Pings the 
+        # This function is responsible for initiating a single ping process to the IP address entered in the entry field.
         ip = self.ip_entry.get()
         count_option = '-n 4' if self.repetition_option.get() == '4' else '-t'
         if ip:
             if self.validate_ip(ip):
-                ping_command = f'start cmd /k ping.exe {count_option} "{ip}"'
+                ping_command = f'start cmd /k powershell -Command "& {{ ping.exe {count_option} "{ip}" | ForEach-Object {{ \\"{{0}} - {{1}}\\" -f (Get-Date),$_ }} }}"'
                 process = subprocess.Popen(ping_command, shell=True)
                 self.processes.append(process)
             else:
@@ -152,35 +150,31 @@ class IPApp:
             messagebox.showwarning("Empty Input", "Please enter an IP address.")
 
     def ping_all_ips(self):
-        # Pings all IP addresses in the listbox
+        # This function is responsible for initiating ping(s) of IP address(es) stored in the listbox
         ip_list = list(self.ip_listbox.get(0, tk.END))
         count_option = '-n 4' if self.repetition_option.get() == '4' else '-t'
 
         for ip in ip_list:
             if self.validate_ip(ip):
-                ping_command = f'start cmd /k ping.exe {count_option} "{ip}"'
+                ping_command = f'start cmd /c powershell -Command "& {{ ping.exe {count_option} "{ip}" | ForEach-Object {{ \\"{{0}} - {{1}}\\" -f (Get-Date),$_ }} }}"'
                 process = subprocess.Popen(ping_command, shell=True)
                 self.processes.append(process)
             else:
                 messagebox.showerror("Invalid IP", f"{ip} is not a valid IP address.")
-
-    # def stop_ping(self):
-    #     os.system("taskkill /f /im cmd.exe")
     
     def stop_ping(self):
+        # This function is responsible for terminating all ongoing ping processes
         for process in self.processes:
-            print(process)
-        #     else:
-        #         messagebox.showerror('error 2')
-        # except Exception as e:
-        #     messagebox.showerror('error 3')
-
-            
+            process.kill()
+        self.processes = []
+                      
     def deactivate_entry(self):
+        # Deactivates the IP entry field when the 'All' radio button is selected
         self.ip_entry.delete(0, tk.END)
         self.ip_entry.config(state='disabled')
 
     def activate_entry(self):
+        # Reactivates the IP entry field when the 'All' radio button is deselected
         self.ip_entry.config(state='normal')
 
 root = tk.Tk()
