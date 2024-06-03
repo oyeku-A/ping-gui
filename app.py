@@ -1,4 +1,5 @@
 import re
+import os
 import subprocess
 import tkinter as tk
 from tkinter import messagebox
@@ -47,7 +48,7 @@ class IPApp:
         self.start_stop_frame.grid(column=0, row=8, sticky='NWES', pady=(10, 0))
         self.start_button = tk.Button(self.start_stop_frame, text="Start", fg="green", command=self.start_ping)
         self.start_button.grid(column=1, row=0, sticky='NWES', padx=10)
-        self.stop_button = tk.Button(self.start_stop_frame, text="Stop", fg="red", command=self.stop_ping)
+        self.stop_button = tk.Button(self.start_stop_frame, text="Stop", fg="red", command=self.stop_ping, state='disabled')    # disabled stop button since yet to correctly implement stop_ping function
         self.stop_button.grid(column=2, row=0, sticky='NWES')
 
         self.processes = []
@@ -164,9 +165,7 @@ class IPApp:
     
     def stop_ping(self):
         # This function is responsible for terminating all ongoing ping processes
-        for process in self.processes:
-            process.kill()
-        self.processes = []
+        pass
                       
     def deactivate_entry(self):
         # Deactivates the IP entry field when the 'All' radio button is selected
@@ -178,6 +177,10 @@ class IPApp:
         self.ip_entry.config(state='normal')
 
 
+basedir = os.path.dirname(__file__)
+icon_path = os.path.join(basedir, "icons", "icon.ico")
+
 root = tk.Tk()
 app = IPApp(root)
+root.iconbitmap(icon_path)
 root.mainloop()
