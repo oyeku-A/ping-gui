@@ -128,7 +128,7 @@ class IPApp:
             self.ip_entry.delete(0, tk.END)
             self.ip_entry.insert(0, ip)
 
-    def start_ping(self):
+    def start_ping(self, event=None):
         # This function is responsible for initiating the ping process based on the selected option
         if self.ping_option.get() == 'Single':
             self.ping_single_ip()
@@ -176,6 +176,7 @@ class IPApp:
     def activate_entry(self):
         # Reactivates the IP entry field when the 'All' radio button is deselected
         self.ip_entry.config(state='normal')
+
 
 root = tk.Tk()
 app = IPApp(root)
