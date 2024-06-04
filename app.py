@@ -8,7 +8,7 @@ class IPApp:
     def __init__(self, root):
         # root window
         self.root = root
-        self.root.title("Ip Ping Tool")
+        self.root.title("IP Ping Tool")
         self.root.geometry("250x220")
         self.root.resizable(height=False, width=False)
 
@@ -43,13 +43,9 @@ class IPApp:
         self.repetition_inf_radio = tk.Radiobutton(self.left_frame, text='Inf', variable=self.repetition_option, value='Inf')
         self.repetition_inf_radio.grid(column=0, row=7, sticky='W')
 
-        # Left Frame - start and stop buttons
-        self.start_stop_frame = tk.Frame(self.left_frame)
-        self.start_stop_frame.grid(column=0, row=8, sticky='NWES', pady=(10, 0))
-        self.start_button = tk.Button(self.start_stop_frame, text="Start", fg="green", command=self.start_ping)
-        self.start_button.grid(column=1, row=0, sticky='NWES', padx=10)
-        self.stop_button = tk.Button(self.start_stop_frame, text="Stop", fg="red", command=self.stop_ping, state='disabled')    # disabled stop button since yet to correctly implement stop_ping function
-        self.stop_button.grid(column=2, row=0, sticky='NWES')
+        # Left Frame - start button
+        self.start_button = tk.Button(self.left_frame, text="Start", fg="green", command=self.start_ping)
+        self.start_button.grid(column=0, row=8, sticky='NWES', padx=10, columnspan=3, pady=(10, 0))
 
         self.processes = []
         self.root.bind("<Return>", self.start_ping)
@@ -67,9 +63,9 @@ class IPApp:
         # Right Frame - add and remove buttons
         self.add_remove_frame = tk.Frame(self.right_frame)
         self.add_remove_frame.grid(column=0, row=8, sticky='NWES', pady=(7, 0))
-        self.add_button = tk.Button(self.add_remove_frame, text="Add", command=self.add_ip)
+        self.add_button = tk.Button(self.add_remove_frame, text="Add", fg="green", command=self.add_ip)
         self.add_button.grid(column=1, row=0, sticky='NWES', padx=10)
-        self.remove_button = tk.Button(self.add_remove_frame, text="Remove", command=self.remove_ip)
+        self.remove_button = tk.Button(self.add_remove_frame, text="Remove", fg="red", command=self.remove_ip)
         self.remove_button.grid(column=2, row=0, sticky='NWES')
 
         # Load Ip addresses from file(Ip_addresses.txt) if available
@@ -96,10 +92,12 @@ class IPApp:
         self.save_ip_address()
 
     def remove_ip(self):
-        # Removes the selected IP address from the listbox and saves the updated list of IP addresses.
+        # Removes the selected IP address from the listbox and saves the updated list of IP addresses. 
         selected_ip_index = self.ip_listbox.curselection()
         if selected_ip_index:
             self.ip_listbox.delete(selected_ip_index)
+        else:
+            messagebox.showerror("Select IP", f"No IP has been selected for removal.")
         self.save_ip_address()
 
     def save_ip_address(self):
@@ -157,15 +155,11 @@ class IPApp:
 
         for ip in ip_list:
             if self.validate_ip(ip):
-                ping_command = f'start cmd /c powershell -Command "& {{ ping.exe {count_option} "{ip}" | ForEach-Object {{ \\"{{0}} - {{1}}\\" -f (Get-Date),$_ }} }}"'
+                ping_command = f'start cmd /k powershell -Command "& {{ ping.exe {count_option} "{ip}" | ForEach-Object {{ \\"{{0}} - {{1}}\\" -f (Get-Date),$_ }} }}"'
                 process = subprocess.Popen(ping_command, shell=True)
                 self.processes.append(process)
             else:
                 messagebox.showerror("Invalid IP", f"{ip} is not a valid IP address.")
-    
-    def stop_ping(self):
-        # This function is responsible for terminating all ongoing ping processes
-        pass
                       
     def deactivate_entry(self):
         # Deactivates the IP entry field when the 'All' radio button is selected
