@@ -2,6 +2,7 @@ import re
 import os
 import subprocess
 import tkinter as tk
+from requests import get
 from tkinter import messagebox
 
 class IPApp:
@@ -9,9 +10,20 @@ class IPApp:
         # root window
         self.root = root
         self.root.title("IP Ping Tool")
-        self.root.geometry("250x220")
+        self.root.geometry("250x270")
         self.root.resizable(height=False, width=False)
-
+        self.ip_address_path = os.path.join(os.getenv('LOCALAPPDATA'), 'IP-Ping Tool', 'ip_addresses.txt')
+               
+        # Fetch and Display IP address label
+        try:
+            self.ip = get('https://api.ipify.org').text
+            
+        except:
+            self.ip = 'Error getting Ip'
+        
+        self.ip_label = tk.Label(self.root, text=f"My IP Address: {self.ip}")
+        self.ip_label.pack(pady=10)  # Adjust pady as needed
+        
         # Left Frame
         self.left_frame = tk.Frame(root)
         self.left_frame.pack(side="left", padx=10, pady=10)
@@ -70,6 +82,7 @@ class IPApp:
 
         # Load Ip addresses from file(Ip_addresses.txt) if available
         self.load_ip_address()
+
      
     def validate_ip(self, ip):
         # Regular expression for Ipv4 address validation
@@ -102,14 +115,16 @@ class IPApp:
 
     def save_ip_address(self):
         # Saves the list of IP addresses currently displayed in the listbox to a text file named "ip_addresses.txt".
-        with open("ip_addresses.txt", "w") as file:
+        with open(self.ip_address_path, "w") as file:
             for ip in self.ip_listbox.get(0, tk.END):
                 file.write(f'{ip}\n')
 
     def load_ip_address(self):
         # Loads the list of IP addresses currently in a text file named "ip_addresses.txt" to listbox in the program
+        if not os.path.exists(self.ip_address_path):
+            os.makedirs(os.path.dirname(self.ip_address_path), exist_ok=True)
         try:
-            with open('ip_addresses.txt', 'r') as file:
+            with open(self.ip_address_path, 'r') as file:
                 for line in file:
                     ip = line.strip()
                     # This validates and checks for duplicates just incase the txt file was manually modified, inorder to avoid the programming crashing due to invalid IPv4 address or executing the same address if 'all' is selected
@@ -129,7 +144,7 @@ class IPApp:
 
     def start_ping(self, event=None):
         # This function is responsible for initiating the ping process based on the selected option
-        if self.ping_option.get() == 'Single':
+        if self.ping_option.get() == 'Singlpe':
             self.ping_single_ip()
         else:
             self.ping_all_ips()
@@ -169,10 +184,18 @@ class IPApp:
     def activate_entry(self):
         # Reactivates the IP entry field when the 'All' radio button is deselected
         self.ip_entry.config(state='normal')
-
+        
 
 basedir = os.path.dirname(__file__)
 icon_path = os.path.join(basedir, "icons", "icon.ico")
+
+try:
+    from ctypes import windll
+
+    myappid = ""
+    windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+except ImportError:
+    pass
 
 root = tk.Tk()
 app = IPApp(root)
