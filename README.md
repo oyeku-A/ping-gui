@@ -23,7 +23,7 @@ Ping GUI is a simple and user-friendly graphical application built with Tkinter.
 ### How to Run:
 1. Ensure you have Python 3.x installed on your system.
 2. Install the necessary libraries using `pip install requests`.
-3. Run the script using `python ping_gui.py`.
+3. Run the script using `python ping-gui.py`.
 
 ### Notes:
 - This script opens up powershell inside of cmd, this was done based off requirements. So feel free to modify the code to ping directly from powershell
